@@ -69,6 +69,10 @@ jobs:
       # ========================
       # 🧪 CYPRESS
       # ========================
+      - name: Install Cypress binary
+        working-directory: frontend-crm
+        run: npx cypress install
+
       - name: Run Cypress
         working-directory: frontend-crm
         run: npx cypress run
