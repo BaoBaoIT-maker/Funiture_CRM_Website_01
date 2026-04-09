@@ -1,0 +1,78 @@
+name: Cypress Tests
+
+on: [push]
+
+jobs:
+  cypress-run:
+    runs-on: ubuntu-latest
+
+    steps:
+      # 📥 Clone code
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      # 🟢 Setup Node 20 (BẮT BUỘC)
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      # ========================
+      # 🟢 BACKEND
+      # ========================
+      - name: Install backend
+        working-directory: backend-crm
+        run: npm install
+
+      # Tạo .env (fix lỗi thiếu env trên CI)
+      - name: Create backend env
+        run: |
+          echo "PORT=5000" >> backend-crm/.env
+
+      # Start backend + log ra file
+      - name: Start backend
+        working-directory: backend-crm
+        run: |
+          npm start > backend.log 2>&1 &
+          sleep 5
+          echo "===== BACKEND LOG ====="
+          cat backend.log
+
+      # ========================
+      # 🔵 FRONTEND
+      # ========================
+      - name: Install frontend
+        working-directory: frontend-crm
+        run: npm install
+
+      # Fix permission (tránh vite/cypress lỗi)
+      - name: Fix permission
+        run: chmod -R +x frontend-crm/node_modules/.bin
+
+      - name: Start frontend
+        working-directory: frontend-crm
+        run: |
+          npm run dev > frontend.log 2>&1 &
+          sleep 5
+          echo "===== FRONTEND LOG ====="
+          cat frontend.log
+
+      # ========================
+      # ⏳ WAIT SERVER READY
+      # ========================
+      - name: Wait for backend
+        run: npx wait-on http://localhost:5000
+
+      - name: Wait for frontend
+        run: npx wait-on http://localhost:5173
+
+      # ========================
+      # 🧪 CYPRESS
+      # ========================
+      - name: Install Cypress binary
+        working-directory: frontend-crm
+        run: npx cypress install
+
+      - name: Run Cypress
+        working-directory: frontend-crm
+        run: npx cypress run
