@@ -11,7 +11,7 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      # 🟢 Setup Node 20 (QUAN TRỌNG)
+      # 🟢 Setup Node 20 (BẮT BUỘC)
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
@@ -24,9 +24,19 @@ jobs:
         working-directory: backend-crm
         run: npm install
 
+      # Tạo .env (fix lỗi thiếu env trên CI)
+      - name: Create backend env
+        run: |
+          echo "PORT=8080" >> backend-crm/.env
+
+      # Start backend + log ra file
       - name: Start backend
         working-directory: backend-crm
-        run: npm start &
+        run: |
+          npm start > backend.log 2>&1 &
+          sleep 5
+          echo "===== BACKEND LOG ====="
+          cat backend.log
 
       # ========================
       # 🔵 FRONTEND
@@ -35,12 +45,17 @@ jobs:
         working-directory: frontend-crm
         run: npm install
 
-      - name: Fix permission (IMPORTANT)
+      # Fix permission (tránh vite/cypress lỗi)
+      - name: Fix permission
         run: chmod -R +x frontend-crm/node_modules/.bin
 
       - name: Start frontend
         working-directory: frontend-crm
-        run: npm run dev &
+        run: |
+          npm run dev > frontend.log 2>&1 &
+          sleep 5
+          echo "===== FRONTEND LOG ====="
+          cat frontend.log
 
       # ========================
       # ⏳ WAIT SERVER READY
