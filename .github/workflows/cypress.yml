@@ -27,7 +27,7 @@ jobs:
       # Tạo .env (fix lỗi thiếu env trên CI)
       - name: Create backend env
         run: |
-          echo "PORT=8080" >> backend-crm/.env
+          echo "PORT=5000" >> backend-crm/.env
 
       # Start backend + log ra file
       - name: Start backend
