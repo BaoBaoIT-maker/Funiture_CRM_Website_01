@@ -9,16 +9,16 @@ jobs:
     steps:
       # 📥 Clone code
       - name: Checkout code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
-      # 🟢 Setup Node
+      # 🟢 Setup Node 20 (QUAN TRỌNG)
       - name: Setup Node
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
         with:
-          node-version: 18
+          node-version: 20
 
       # ========================
-      # 🟢 BACKEND (5000)
+      # 🟢 BACKEND
       # ========================
       - name: Install backend
         working-directory: backend-crm
@@ -26,22 +26,30 @@ jobs:
 
       - name: Start backend
         working-directory: backend-crm
-        run: |
-          npm start &
-          sleep 8
+        run: npm start &
 
       # ========================
-      # 🔵 FRONTEND (5173 - Vite)
+      # 🔵 FRONTEND
       # ========================
       - name: Install frontend
         working-directory: frontend-crm
         run: npm install
 
+      - name: Fix permission (IMPORTANT)
+        run: chmod -R +x frontend-crm/node_modules/.bin
+
       - name: Start frontend
         working-directory: frontend-crm
-        run: |
-          npm run dev &
-          sleep 10
+        run: npm run dev &
+
+      # ========================
+      # ⏳ WAIT SERVER READY
+      # ========================
+      - name: Wait for backend
+        run: npx wait-on http://localhost:5000
+
+      - name: Wait for frontend
+        run: npx wait-on http://localhost:5173
 
       # ========================
       # 🧪 CYPRESS
