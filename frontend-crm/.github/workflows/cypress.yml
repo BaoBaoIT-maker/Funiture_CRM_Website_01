@@ -1,0 +1,51 @@
+name: Cypress Tests
+
+on: [push]
+
+jobs:
+  cypress-run:
+    runs-on: ubuntu-latest
+
+    steps:
+      # 📥 Clone code
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      # 🟢 Setup Node
+      - name: Setup Node
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18
+
+      # ========================
+      # 🟢 BACKEND (5000)
+      # ========================
+      - name: Install backend
+        working-directory: backend-crm
+        run: npm install
+
+      - name: Start backend
+        working-directory: backend-crm
+        run: |
+          npm start &
+          sleep 8
+
+      # ========================
+      # 🔵 FRONTEND (5173 - Vite)
+      # ========================
+      - name: Install frontend
+        working-directory: frontend-crm
+        run: npm install
+
+      - name: Start frontend
+        working-directory: frontend-crm
+        run: |
+          npm run dev &
+          sleep 10
+
+      # ========================
+      # 🧪 CYPRESS
+      # ========================
+      - name: Run Cypress
+        working-directory: frontend-crm
+        run: npx cypress run
