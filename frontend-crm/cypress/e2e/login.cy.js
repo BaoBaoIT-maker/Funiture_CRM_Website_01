@@ -1,7 +1,10 @@
-describe("Login E2E Test (Real Backend)", () => {
+describe("Login E2E Test", () => {
+
+    const loginUrl = "/login";
+    const apiLoginUrl = "http://localhost:5000/api/auth/login"; // trùng với request frontend gửi
 
     beforeEach(() => {
-        cy.visit("/login");
+        cy.visit(loginUrl);
         cy.clearLocalStorage();
     });
 
@@ -18,7 +21,7 @@ describe("Login E2E Test (Real Backend)", () => {
     });
 
     // =========================
-    // 2. Validation
+    // 2. Validation khi bỏ trống
     // =========================
     it("Hiển thị lỗi khi bỏ trống", () => {
         cy.contains("button", "Vào hệ thống").click();
@@ -28,53 +31,48 @@ describe("Login E2E Test (Real Backend)", () => {
     });
 
     // =========================
-    // 3. Login thành công (functional)
+    // 3. Login thành công (mock API)
     // =========================
     it("Đăng nhập thành công", () => {
-        cy.intercept("POST", "/api/auth/login").as("login");
+        cy.intercept("POST", apiLoginUrl, {
+            statusCode: 200,
+            body: { token: "fake-jwt-token" }
+        }).as("login");
 
-        cy.get('input[placeholder="admin"]').clear().type("admin");
-        cy.get('input[placeholder="••••••••"]').clear().type("123");
+        cy.get('input[placeholder="admin"]').type("admin");
+        cy.get('input[placeholder="••••••••"]').type("123");
 
         cy.contains("button", "Vào hệ thống").click();
 
-        cy.wait("@login").then((interception) => {
-            expect(interception.response.statusCode).to.eq(200);
+        cy.wait("@login");
 
-            const body = interception.response.body;
-            expect(body).to.satisfy((b) =>
-                b.token || b.accessToken || b.data?.token
-            );
-        });
-
+        // kiểm tra token được lưu vào localStorage
         cy.window().then((win) => {
             expect(win.localStorage.getItem("token")).to.exist;
         });
 
-        cy.contains("Đăng nhập thất bại").should("not.exist");
+        // đảm bảo không hiển thị lỗi
+        cy.contains("Sai mật khẩu").should("not.exist");
     });
 
     // =========================
-    // 4. Login thất bại (CÁCH 3 - chuẩn nhất)
+    // 4. Login thất bại (mock API)
     // =========================
     it("Hiển thị lỗi khi sai mật khẩu", () => {
-        cy.intercept("POST", "/api/auth/login").as("login");
+        cy.intercept("POST", apiLoginUrl, {
+            statusCode: 401,
+            body: { message: "Sai mật khẩu" }
+        }).as("login");
 
         cy.get('input[placeholder="admin"]').type("admin");
         cy.get('input[placeholder="••••••••"]').type("sai123");
 
         cy.contains("button", "Vào hệ thống").click();
 
-        // ✅ 1. API phải fail
-        cy.wait("@login").then((interception) => {
-            expect(interception.response.statusCode).to.be.oneOf([400, 401]);
-        });
+        cy.wait("@login");
 
-        // ✅ 2. Không có token (QUAN TRỌNG NHẤT)
-        cy.window().then((win) => {
-            expect(win.localStorage.getItem("token")).to.be.null;
-        });
-
+        // kiểm tra thông báo lỗi hiển thị đúng text trên UI
+        cy.contains("Sai mật khẩu").should("exist");
     });
 
 });

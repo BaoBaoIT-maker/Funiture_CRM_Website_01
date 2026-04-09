@@ -27,18 +27,16 @@ axiosClient.interceptors.response.use(
     (error) => {
         const status = error.response?.status;
 
-        // Token hết hạn hoặc không hợp lệ → đá ra trang login
-        if (status === 401) {
+        // Chỉ redirect khi 401 xảy ra ở các trang KHÁC /login
+        if (status === 401 && !window.location.pathname.includes("/login")) {
             localStorage.removeItem("token");
             window.location.href = "/login";
         }
 
-        // Không có quyền truy cập
         if (status === 403) {
             console.warn("Bạn không có quyền thực hiện thao tác này.");
         }
 
-        // Server lỗi
         if (status >= 500) {
             console.error("Lỗi server, vui lòng thử lại sau.");
         }

@@ -15,22 +15,23 @@ export default function Login() {
     const [form] = Form.useForm();
     const navigate = useNavigate();
     const [loading, setLoading] = useState(false);
+    const [loginError, setLoginError] = useState(""); // ← THÊM
 
     const handleLogin = async (values) => {
         setLoading(true);
+        setLoginError(""); // ← reset lỗi mỗi lần submit
         try {
             const res = await axiosClient.post("/auth/login", {
                 username: values.username,
                 password: values.password,
             });
-            // Backend trả về { success: true, token: "..." }
             localStorage.setItem("token", res.data.token);
             message.success("Đăng nhập thành công!");
             navigate("/");
         } catch (err) {
-            // Axios ném lỗi khi status 4xx/5xx
             const msg = err.response?.data?.message || "Đăng nhập thất bại";
             message.error(msg);
+            setLoginError(msg); // ← THÊM: render vào DOM để Cypress detect được
         } finally {
             setLoading(false);
         }
@@ -43,7 +44,7 @@ export default function Login() {
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
-                background: "#020617", // Nền đậm hơn để tăng chiều sâu
+                background: "#020617",
                 fontFamily: "'Be Vietnam Pro', sans-serif",
                 position: "relative",
                 overflow: "hidden",
@@ -226,15 +227,37 @@ export default function Login() {
                             />
                         </Form.Item>
 
-                        <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "32px" }}>
+                        <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "24px" }}>
                             <Checkbox style={{ color: "#64748b", fontSize: "13px" }}>Lưu phiên</Checkbox>
                             <a href="#" style={{ color: "#f59e0b", fontSize: "13px", fontWeight: 500 }}>Quên mật khẩu?</a>
                         </div>
+
+                        {/* ← THÊM: Error message render vào DOM — Cypress cy.contains() sẽ detect được */}
+                        {loginError && (
+                            <div
+                                style={{
+                                    display: "flex",
+                                    alignItems: "center",
+                                    gap: 8,
+                                    background: "rgba(239, 68, 68, 0.1)",
+                                    border: "1px solid rgba(239, 68, 68, 0.2)",
+                                    borderRadius: "10px",
+                                    padding: "10px 14px",
+                                    marginBottom: "16px",
+                                    color: "#f87171",
+                                    fontSize: "13px",
+                                }}
+                            >
+                                <span style={{ fontSize: 16 }}>⚠</span>
+                                {loginError}
+                            </div>
+                        )}
 
                         <Button
                             type="primary"
                             htmlType="submit"
                             block
+                            loading={loading}
                             icon={<ArrowRightOutlined />}
                             iconPosition="end"
                             style={{
