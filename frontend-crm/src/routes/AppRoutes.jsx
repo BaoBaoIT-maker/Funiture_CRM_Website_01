@@ -1,22 +1,15 @@
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Route, Routes } from "react-router-dom";
 
-// IMPORT ĐÚNG PATH
-import Login from "../pages/Login";
-import Dashboard from "../pages/Dashboard";
-import Products from "../pages/Products";
-import Customers from "../pages/Customers";
-import CustomerDetail from "../pages/CustomerDetail";
 import MainLayout from "../layouts/MainLayout";
+import Login from "../pages/Login";
 import RequireAuth from "./RequireAuth";
 
 export default function AppRoutes() {
     return (
         <BrowserRouter>
             <Routes>
-                {/* Login riêng */}
                 <Route path="/login" element={<Login />} />
 
-                {/* Layout */}
                 <Route
                     element={(
                         <RequireAuth>
@@ -24,10 +17,7 @@ export default function AppRoutes() {
                         </RequireAuth>
                     )}
                 >
-                    <Route path="/" element={<Dashboard />} />
-                    <Route path="/products" element={<Products />} />
-                    <Route path="/customers" element={<Customers />} />
-                    <Route path="/customers/:id" element={<CustomerDetail />} />
+                    {/* Protected routes will be added when their pages are committed */}
                 </Route>
             </Routes>
         </BrowserRouter>
