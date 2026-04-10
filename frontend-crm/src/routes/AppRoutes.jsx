@@ -4,6 +4,8 @@ import MainLayout from "../layouts/MainLayout";
 import Login from "../pages/Login";
 import Products from "../pages/Products";
 import RequireAuth from "./RequireAuth";
+import Dashboard from "../pages/Dashboard.jsx";
+import Customers from "../pages/Customers.jsx";
 
 export default function AppRoutes() {
     return (
@@ -18,7 +20,9 @@ export default function AppRoutes() {
                         </RequireAuth>
                     )}
                 >
+                    <Route path="/" element={<Dashboard />} />
                     <Route path="/products" element={<Products />} />
+                    <Route path="/customers" element={<Customers />} />
                 </Route>
             </Routes>
         </BrowserRouter>
