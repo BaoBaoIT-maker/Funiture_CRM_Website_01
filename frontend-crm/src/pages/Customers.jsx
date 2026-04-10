@@ -16,14 +16,15 @@ import {
     Typography,
 } from "antd";
 import {
-    PlusOutlined,
-    SearchOutlined,
     DeleteOutlined,
-    SaveOutlined,
     EyeOutlined,
+    PlusOutlined,
+    SaveOutlined,
+    SearchOutlined,
 } from "@ant-design/icons";
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
+
 import axiosClient from "../api/axiosClient";
 
 const { Text } = Typography;
@@ -72,6 +73,13 @@ export default function Customers() {
             ),
         [orderItems]
     );
+
+    const productPriceMap = useMemo(() => {
+        return products.reduce((map, product) => {
+            map[product.id] = toNumber(product.basePrice);
+            return map;
+        }, {});
+    }, [products]);
 
     const fetchCustomers = async () => {
         setLoading(true);
@@ -143,6 +151,11 @@ export default function Customers() {
                         dealPrice: toNumber(item.dealPrice),
                     })),
             };
+
+            if (payload.products.length === 0) {
+                message.error("Vui lòng chọn ít nhất 1 sản phẩm cho đơn hàng");
+                return;
+            }
 
             const res = await axiosClient.post("/customers", payload);
             const createdCustomerId = res.data?.data?.id;
@@ -378,6 +391,10 @@ export default function Customers() {
                                                     <Select
                                                         showSearch
                                                         placeholder="Chọn sản phẩm"
+                                                        onChange={(productId) => {
+                                                            const defaultPrice = productPriceMap[productId] || 0;
+                                                            form.setFieldValue(["orderItems", field.name, "dealPrice"], defaultPrice);
+                                                        }}
                                                         options={products.map((product) => ({
                                                             label: `${product.name} (${toNumber(product.basePrice).toLocaleString("vi-VN")} đ)`,
                                                             value: product.id,
