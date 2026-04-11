@@ -81,7 +81,6 @@ describe("Customers E2E Test", () => {
         cy.contains(".ant-select-item-option-content", "Sofa Goc L").click();
 
         getCreateCustomerModal().find('input[placeholder="SL"]').clear().type("2");
-        getCreateCustomerModal().find('input[placeholder="Giá chốt"]').clear().type("13000000");
     }
 
     beforeEach(() => {
@@ -125,7 +124,8 @@ describe("Customers E2E Test", () => {
         openCreateCustomerModal();
         fillCustomerForm();
 
-        getCreateCustomerModal().contains(/26[.,]000[.,]000 đ/).should("exist");
+        getCreateCustomerModal().find('input[placeholder="Giá chốt"]').should("have.value", "12,000,000");
+        getCreateCustomerModal().contains(/24[.,]000[.,]000 đ/).should("exist");
     });
 
     it("Tạo khách hàng thành công và chuyển sang trang chi tiết", () => {
@@ -135,15 +135,15 @@ describe("Customers E2E Test", () => {
             phone: "0911222333",
             email: "bao@gmail.com",
             address: "Quan 1, TP.HCM",
-            budget: "Cao cap",
-            totalAmount: 26000000,
+            budget: "Cao cấp",
+            totalAmount: 24000000,
             status: "Đang tư vấn",
             notes: "Can tu van sofa phong khach",
             customerProducts: [
                 {
                     productId: 1,
                     quantity: 2,
-                    dealPrice: 13000000,
+                    dealPrice: 12000000,
                 },
             ],
         };
@@ -154,7 +154,7 @@ describe("Customers E2E Test", () => {
             expect(req.body.products).to.have.length(1);
             expect(req.body.products[0].productId).to.equal(1);
             expect(req.body.products[0].quantity).to.equal(2);
-            expect(req.body.products[0].dealPrice).to.equal(13000000);
+            expect(req.body.products[0].dealPrice).to.equal(12000000);
 
             req.reply({
                 statusCode: 200,
@@ -186,7 +186,7 @@ describe("Customers E2E Test", () => {
             .contains(".ant-form-item", "Ngân sách")
             .find(".ant-select")
             .click();
-        cy.contains(".ant-select-item-option-content", "Cao cap").click();
+        cy.contains(".ant-select-item-option-content", "Cao cấp").click();
 
         getCreateCustomerModal()
             .contains(".ant-form-item", "Trạng thái")
@@ -202,7 +202,6 @@ describe("Customers E2E Test", () => {
         cy.contains(".ant-select-item-option-content", "Sofa Goc L").click();
 
         getCreateCustomerModal().find('input[placeholder="SL"]').clear().type("2");
-        getCreateCustomerModal().find('input[placeholder="Giá chốt"]').clear().type("13000000");
 
         cy.contains("button", "Lưu khách hàng").click();
 
