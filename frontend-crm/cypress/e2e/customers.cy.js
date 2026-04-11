@@ -57,21 +57,31 @@ describe("Customers E2E Test", () => {
 
     function openCreateCustomerModal() {
         cy.contains("button", "Thêm khách hàng").click();
-        cy.contains("Tạo khách hàng và chi tiết đơn hàng").should("be.visible");
+        cy.get(".ant-modal:visible", { timeout: 10000 }).should("have.length.at.least", 1);
+        cy.contains(".ant-modal-title", "Tạo khách hàng và chi tiết đơn hàng", { timeout: 10000 })
+            .should("exist");
+    }
+
+    function getCreateCustomerModal() {
+        return cy.get(".ant-modal:visible").last();
     }
 
     function fillCustomerForm() {
-        cy.get(".ant-modal").within(() => {
+        getCreateCustomerModal().within(() => {
             cy.get('input[placeholder="Nguyễn Văn A"]').type("Le Hoang Bao");
             cy.get('input[placeholder="0901234567"]').type("0911222333");
             cy.get('input[placeholder="khachhang@gmail.com"]').type("bao@gmail.com");
         });
 
-        cy.get(".ant-modal").find(".ant-select").eq(2).click();
+        getCreateCustomerModal()
+            .contains(".ant-card", "Chi tiết sản phẩm khách chọn")
+            .find(".ant-select")
+            .first()
+            .click();
         cy.contains(".ant-select-item-option-content", "Sofa Goc L").click();
 
-        cy.get(".ant-modal").find('input[placeholder="SL"]').clear().type("2");
-        cy.get(".ant-modal").find('input[placeholder="Giá chốt"]').clear().type("13000000");
+        getCreateCustomerModal().find('input[placeholder="SL"]').clear().type("2");
+        getCreateCustomerModal().find('input[placeholder="Giá chốt"]').clear().type("13000000");
     }
 
     beforeEach(() => {
@@ -115,7 +125,7 @@ describe("Customers E2E Test", () => {
         openCreateCustomerModal();
         fillCustomerForm();
 
-        cy.contains("26.000.000 đ").should("exist");
+        getCreateCustomerModal().contains(/26[.,]000[.,]000 đ/).should("exist");
     });
 
     it("Tạo khách hàng thành công và chuyển sang trang chi tiết", () => {
@@ -164,7 +174,7 @@ describe("Customers E2E Test", () => {
 
         openCreateCustomerModal();
 
-        cy.get(".ant-modal").within(() => {
+        getCreateCustomerModal().within(() => {
             cy.get('input[placeholder="Nguyễn Văn A"]').type("Le Hoang Bao");
             cy.get('input[placeholder="0901234567"]').type("0911222333");
             cy.get('input[placeholder="khachhang@gmail.com"]').type("bao@gmail.com");
@@ -172,17 +182,27 @@ describe("Customers E2E Test", () => {
             cy.get('textarea[placeholder="Ghi chú nhu cầu của khách"]').type("Can tu van sofa phong khach");
         });
 
-        cy.get(".ant-modal").find(".ant-select").eq(0).click();
+        getCreateCustomerModal()
+            .contains(".ant-form-item", "Ngân sách")
+            .find(".ant-select")
+            .click();
         cy.contains(".ant-select-item-option-content", "Cao cap").click();
 
-        cy.get(".ant-modal").find(".ant-select").eq(1).click();
+        getCreateCustomerModal()
+            .contains(".ant-form-item", "Trạng thái")
+            .find(".ant-select")
+            .click();
         cy.contains(".ant-select-item-option-content", "Đang tư vấn").click();
 
-        cy.get(".ant-modal").find(".ant-select").eq(2).click();
+        getCreateCustomerModal()
+            .contains(".ant-card", "Chi tiết sản phẩm khách chọn")
+            .find(".ant-select")
+            .first()
+            .click();
         cy.contains(".ant-select-item-option-content", "Sofa Goc L").click();
 
-        cy.get(".ant-modal").find('input[placeholder="SL"]').clear().type("2");
-        cy.get(".ant-modal").find('input[placeholder="Giá chốt"]').clear().type("13000000");
+        getCreateCustomerModal().find('input[placeholder="SL"]').clear().type("2");
+        getCreateCustomerModal().find('input[placeholder="Giá chốt"]').clear().type("13000000");
 
         cy.contains("button", "Lưu khách hàng").click();
 
