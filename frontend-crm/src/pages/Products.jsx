@@ -162,15 +162,6 @@ export default function Products() {
             ),
         },
         {
-            title: "Tồn kho",
-            dataIndex: "stock",
-            render: (stock) => (
-                <span style={{ fontWeight: 600, color: stock === 0 ? "#ef4444" : "#0f172a" }}>
-                    {stock}
-                </span>
-            ),
-        },
-        {
             title: "Đã bán",
             dataIndex: "sold",
             sorter: (a, b) => a.sold - b.sold,
