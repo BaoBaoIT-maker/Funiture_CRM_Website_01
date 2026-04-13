@@ -16,7 +16,14 @@ const normalizeProductData = (productData = {}) => {
     const normalized = { ...productData };
 
     if (Object.prototype.hasOwnProperty.call(normalized, 'imageUrl')) {
-        normalized.imageUrl = normalizeImageUrl(normalized.imageUrl);
+        const normalizedUrl = normalizeImageUrl(normalized.imageUrl);
+        // Only set if normalized URL is valid, otherwise keep original
+        if (normalizedUrl) {
+            normalized.imageUrl = normalizedUrl;
+        } else if (normalized.imageUrl) {
+            // Accept imageUrl as-is if it looks like a URL
+            normalized.imageUrl = normalized.imageUrl;
+        }
     }
 
     return normalized;
