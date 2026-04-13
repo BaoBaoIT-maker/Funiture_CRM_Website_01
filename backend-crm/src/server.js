@@ -3,12 +3,17 @@ import cors from 'cors';
 import dotenv from 'dotenv';
 import path from 'path';
 
-import authRoutes from './routes/authRoutes.js';
-import productRoutes from './routes/productRoutes.js';
-import customerRoutes from './routes/customerRoutes.js';
-import uploadRoutes from './routes/uploadRoutes.js';
-
 dotenv.config();
+console.log('✅ Loading imports...');
+
+import authRoutes from './routes/authRoutes.js';
+console.log('✅ authRoutes loaded');
+import productRoutes from './routes/productRoutes.js';
+console.log('✅ productRoutes loaded');
+import customerRoutes from './routes/customerRoutes.js';
+console.log('✅ customerRoutes loaded');
+import uploadRoutes from './routes/uploadRoutes.js';
+console.log('✅ uploadRoutes loaded');
 const app = express();
 
 app.use(cors());
@@ -54,6 +59,37 @@ app.use((err, req, res, next) => {
 });
 
 const PORT = process.env.PORT || 8080;
-app.listen(PORT, () => {
+const server = app.listen(PORT, () => {
     console.log(`🚀 Server đang chạy tại http://localhost:${PORT}`);
+});
+
+// Log khi server close
+server.on('close', () => {
+    console.log('✅ Server closed gracefully');
+});
+
+server.on('error', (err) => {
+    if (err.code === 'EADDRINUSE') {
+        console.error(`❌ Port ${PORT} đang được sử dụng. Thử port khác hoặc kill process cũ`);
+        process.exit(1);
+    } else {
+        console.error('❌ Server error:', err);
+    }
+});
+
+// Bắt lỗi không được xử lý
+process.on('uncaughtException', (err) => {
+    console.error('❌ Uncaught Exception:', err);
+    process.exit(1);
+});
+
+process.on('unhandledRejection', (reason, promise) => {
+    console.error('❌ Unhandled Rejection:', reason);
+    process.exit(1);
+});
+
+// Graceful shutdown
+process.on('SIGTERM', () => {
+    console.log('⚠️ SIGTERM received, shutting down gracefully');
+    server.close();
 });

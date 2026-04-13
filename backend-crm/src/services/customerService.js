@@ -176,6 +176,11 @@ export const updateCustomerDetail = async (id, data) => {
     const validatedStatus = getValidatedStatus(status, currentCustomer.status);
     const normalizedEmail = await ensureEmailIsUnique(email, Number(id));
 
+    // ❌ Nếu đã thanh toán và status thay đổi, không cho phép
+    if (currentCustomer.isPaid && validatedStatus !== currentCustomer.status) {
+        throw new Error('Khách hàng đã thanh toán, không thể chỉnh sửa trạng thái');
+    }
+
     const updatedCustomer = await prisma.customer.update({
         where: { id: Number(id) },
         data: {
@@ -187,6 +192,8 @@ export const updateCustomerDetail = async (id, data) => {
             notes,
             status: validatedStatus,
             totalAmount: calculatedTotal,
+            // Nếu chuyển sang "Đã thanh toán" thì set isPaid = true
+            ...(validatedStatus === PAID_STATUS ? { isPaid: true } : {}),
             customerProducts: {
                 deleteMany: {},
                 create: normalizedProducts.map(p => ({
@@ -213,11 +220,20 @@ export const updateStatusAndProcessOrder = async (id, status) => {
         throw new Error('Không tìm thấy khách hàng');
     }
 
+    // ❌ Nếu đã thanh toán thì không cho chỉnh sửa status
+    if (currentCustomer.isPaid) {
+        throw new Error('Khách hàng đã thanh toán, không thể chỉnh sửa trạng thái');
+    }
+
     const validatedStatus = getValidatedStatus(status, currentCustomer.status);
 
     const updatedCustomer = await prisma.customer.update({
         where: { id: Number(id) },
-        data: { status: validatedStatus },
+        data: { 
+            status: validatedStatus,
+            // Nếu chuyển sang "Đã thanh toán" thì set isPaid = true
+            ...(validatedStatus === PAID_STATUS ? { isPaid: true } : {})
+        },
         include: { customerProducts: { include: { product: true } } }
     });
 

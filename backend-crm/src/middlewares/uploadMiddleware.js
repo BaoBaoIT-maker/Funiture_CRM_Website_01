@@ -1,26 +1,4 @@
-import fs from 'fs';
-import path from 'path';
 import multer from 'multer';
-
-const uploadsDir = path.resolve(process.cwd(), 'uploads');
-
-const ensureUploadsDir = () => {
-    if (!fs.existsSync(uploadsDir)) {
-        fs.mkdirSync(uploadsDir, { recursive: true });
-    }
-};
-
-const storage = multer.diskStorage({
-    destination: (req, file, cb) => {
-        ensureUploadsDir();
-        cb(null, uploadsDir);
-    },
-    filename: (req, file, cb) => {
-        const ext = path.extname(file.originalname || '').toLowerCase();
-        const safeExt = ext || '.jpg';
-        cb(null, `${Date.now()}-${Math.round(Math.random() * 1e9)}${safeExt}`);
-    },
-});
 
 const fileFilter = (req, file, cb) => {
     if (file.mimetype?.startsWith('image/')) {
@@ -30,6 +8,9 @@ const fileFilter = (req, file, cb) => {
 
     cb(new Error('Chỉ hỗ trợ file ảnh'), false);
 };
+
+// Sử dụng memory storage để upload lên Cloudinary
+const storage = multer.memoryStorage();
 
 export const uploadImage = multer({
     storage,
