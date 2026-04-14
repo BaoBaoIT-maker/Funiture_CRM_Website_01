@@ -26,6 +26,8 @@ export default function Products() {
     const [editingRecord, setEditingRecord] = useState(null);
     const [search, setSearch] = useState("");
     const [filterCategory, setFilterCategory] = useState(null);
+    const [uploading, setUploading] = useState(false);
+    const [imageUrl, setImageUrl] = useState(null);
     const [form] = Form.useForm();
 
     // ── Fetch products from backend ──
@@ -70,12 +72,39 @@ export default function Products() {
 
     const openAdd = () => {
         setEditingRecord(null);
+        setImageUrl(null);
         form.resetFields();
         setModalOpen(true);
     };
 
+    // Upload image to Cloudinary
+    const handleImageUpload = async (file) => {
+        setUploading(true);
+        const formData = new FormData();
+        formData.append('image', file);
+
+        try {
+            console.log('📤 Uploading file:', file.name);
+            const response = await axiosClient.post('/uploads/image', formData, {
+                headers: { 'Content-Type': 'multipart/form-data' },
+            });
+            console.log('✅ Upload response:', response.data);
+            if (response.data.success) {
+                setImageUrl(response.data.data.path);
+                console.log('🖼️ Image URL set:', response.data.data.path);
+                message.success('Tải ảnh thành công');
+            }
+        } catch (error) {
+            message.error('Lỗi khi tải ảnh');
+            console.error('❌ Upload error:', error.response?.data || error.message);
+        } finally {
+            setUploading(false);
+        }
+    };
+
     const openEdit = (record) => {
         setEditingRecord(record);
+        setImageUrl(record.image); // Set current image
         form.setFieldsValue(record);
         setModalOpen(true);
     };
@@ -102,6 +131,8 @@ export default function Products() {
                         name: values.name,
                         category: values.category,
                         basePrice: values.price,
+                        imageUrl: imageUrl || editingRecord.image, // Use new or existing image
+                        description: values.description || "",
                     };
                     const response = await axiosClient.put(`/products/${editingRecord.id}`, updatePayload);
                     if (response.data.success) {
@@ -114,7 +145,8 @@ export default function Products() {
                         name: values.name,
                         category: values.category,
                         basePrice: values.price,
-                        imageUrl: "https://via.placeholder.com/48",
+                        imageUrl: imageUrl || "https://via.placeholder.com/48",
+                        description: values.description || "",
                     };
                     const response = await axiosClient.post('/products', newPayload);
                     if (response.data.success) {
@@ -123,6 +155,7 @@ export default function Products() {
                     }
                 }
                 setModalOpen(false);
+                setImageUrl(null);
             } catch (error) {
                 message.error("Lỗi khi lưu sản phẩm");
                 console.error(error);
@@ -385,12 +418,36 @@ export default function Products() {
                         </Form.Item>
 
                         <Form.Item label="Hình ảnh sản phẩm">
-                            <Upload listType="picture-card" maxCount={1} beforeUpload={() => false}>
-                                <div>
-                                    <PlusOutlined />
-                                    <div style={{ marginTop: 8, fontSize: 12 }}>Tải ảnh lên</div>
-                                </div>
-                            </Upload>
+                            <div>
+                                {imageUrl && (
+                                    <div style={{ marginBottom: 12 }}>
+                                        <Image
+                                            src={imageUrl}
+                                            width={80}
+                                            height={80}
+                                            style={{ borderRadius: 8, objectFit: "cover" }}
+                                            preview={true}
+                                        />
+                                    </div>
+                                )}
+                                <Upload
+                                    listType="picture-card"
+                                    maxCount={1}
+                                    beforeUpload={(file) => {
+                                        handleImageUpload(file);
+                                        return false;
+                                    }}
+                                    onRemove={() => setImageUrl(null)}
+                                    fileList={imageUrl ? [{ uid: '1', name: 'image', status: 'done', url: imageUrl }] : []}
+                                >
+                                    {!imageUrl && (
+                                        <div>
+                                            <PlusOutlined />
+                                            <div style={{ marginTop: 8, fontSize: 12 }}>Tải ảnh lên</div>
+                                        </div>
+                                    )}
+                                </Upload>
+                            </div>
                         </Form.Item>
                     </Form>
                 </Modal>

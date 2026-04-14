@@ -1,10 +1,9 @@
-import { Layout, Menu, Avatar, Dropdown, Badge, Button, Typography } from "antd";
+import { Layout, Menu, Avatar, Dropdown, Button, Typography } from "antd";
 import {
     DashboardOutlined,
     AppstoreOutlined,
     UserOutlined,
     LogoutOutlined,
-    BellOutlined,
     SettingOutlined,
     MenuFoldOutlined,
     MenuUnfoldOutlined,
@@ -252,14 +251,6 @@ export default function MainLayout() {
                     </div>
 
                     <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-                        <Badge count={3} size="small">
-                            <Button
-                                type="text"
-                                icon={<BellOutlined />}
-                                shape="circle"
-                                style={{ color: "#64748b" }}
-                            />
-                        </Badge>
                         <Dropdown menu={userMenu} trigger={["click"]} placement="bottomRight">
                             <div
                                 style={{

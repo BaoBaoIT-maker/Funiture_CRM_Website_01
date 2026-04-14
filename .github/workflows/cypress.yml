@@ -49,6 +49,11 @@ jobs:
       - name: Fix permission
         run: chmod -R +x frontend-crm/node_modules/.bin
 
+      # Tạo .env (fix lỗi thiếu env trên CI) cho frontend
+      - name: Create frontend env
+        run: |
+          echo "VITE_API_URL=http://localhost:5000/api" >> frontend-crm/.env
+
       - name: Start frontend
         working-directory: frontend-crm
         run: |
