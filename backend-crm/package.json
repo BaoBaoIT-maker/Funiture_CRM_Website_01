@@ -10,6 +10,9 @@
     "dev": "nodemon src/server.js",
     "seed": "node prisma/seed.js"
   },
+  "prisma": {
+    "seed": "node prisma/seed.js"
+  },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/BaoBaoIT-maker/Funiture_CRM_Website.git"
